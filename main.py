@@ -4,6 +4,14 @@ from typing import List, Tuple,Dict,Optional
 from pydantic import BaseModel
 
 @dataclass
+class UserOutput:
+    UW_decision: str
+    notification: str
+    dti_ratio: float
+    audit_trail: str
+
+
+@dataclass
 class User:
     loan_application_product_name: str
     loan_application_sum:int
@@ -13,16 +21,13 @@ class User:
     loan_applicant_fullname:str
     loan_applicant_birthdate:str
     loan_applicant_is_repeat_client:bool
-    UW_decision: str
-    notification:str
-    dti_ratio:float
-    audit_trail: str
+    UserOutput
     loan_applicant_credit_score: Optional[float]= None
     loan_applicant_income:Optional[float]= None
     loan_applicant_liabilities:Optional[float]= None
     loan_applicant_outstanding_debt_in_debt_registry:Optional[float]= None
     
-    
+    '''
     def __init__(self):
         self.loan_application_product_name=input("loan_application_product_name:")
         self.loan_application_sum=input("loan_application_sum:")
@@ -36,13 +41,15 @@ class User:
         self.loan_applicant_liabilities=input("loan_applicant_liabilities")
         self.loan_applicant_outstanding_debt_in_debt_registry=input("loan_applicant_outstanding_debt_in_debt_registry")
         self.loan_applicant_is_repeat_client=bool(input("loan_applicant_is_repeat_client:"))      
-
-    def calculate_age(born):
+'''
+    def calculate_age(self,born):
         today=date.today()
-        return (today.year-born.year )//timedelta(days=365.2425)
+        dt= datetime.strptime(self.loan_applicant_birthdate,'%Y-%m-%d')
+        return (today.year-dt.year)//timedelta(days=365.2425)
 
     def application_checker(self):
-        age=self.calculate_age(self.loan_applicant_birthdate)
+        dob= self.loan_applicant_birthdate
+        age=self.calculate_age(dob)
         if (age<=18):
             self.UW_decision="Decline"
         elif(age>80):
@@ -88,4 +95,22 @@ class User:
                 else:
                     self.UW_decision="Decline"
 
-user_1= User()
+
+external_data={
+
+"loan_application_product_name": "spl17",
+"loan_application_sum": 600,
+"loan_application_timestamp" : "2020-10-18T10:20:30",
+"loan_application_duration_in_days": 90,
+"loan_application_is_top_up": False,
+"loan_applicant_fullname": "Alice Smith",
+"loan_applicant_birthdate": "1988-01-05",
+"loan_applicant_credit_score": 2.3,
+"loan_applicant_income": 1241.0,
+"loan_applicant_liabilities": 312.6,
+"loan_applicant_outstanding_debt_in_debt_registry": None,
+"loan_applicant_is_repeat_client" : False
+}
+user1= User(**external_data)
+user1.application_checker()
+print(asdict(user1))
