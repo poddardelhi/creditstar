@@ -12,16 +12,13 @@ class User:
     lastname: str
     age: int
     notification:str
+    userOutput: dict
+      
     
     
-    '''
-    def __init__(self):
-        self.firstname=input("Enter your name:")
-        self.lastname=input("Enter the last name:")
-        self.age=int(input("Enter the age:"))
-       ''' 
+       
     
-    def test_checker(self):
+    def __post_init__(self):
         age= int(self.age)
         if(age<30):
             self.notification="Young"
