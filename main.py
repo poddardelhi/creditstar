@@ -27,25 +27,11 @@ class User:
     loan_applicant_liabilities:Optional[float]= None
     loan_applicant_outstanding_debt_in_debt_registry:Optional[float]= None
     
-    '''
-    def __init__(self):
-        self.loan_application_product_name=input("loan_application_product_name:")
-        self.loan_application_sum=input("loan_application_sum:")
-        self.loan_application_timestamp=input("loan_application_timestamp:")
-        self.loan_application_duration_in_days=input("loan_application_duration_in_days:") 
-        self.loan_application_is_top_up=input("loan_application_is_top_up:")
-        self.loan_applicant_fullname=input("loan_applicant_fullname:")
-        self.loan_applicant_birthdate=input("loan_applicant_birthdate:")
-        self.loan_applicant_credit_score=input("loan_applicant_credit_score:")
-        self.loan_applicant_income=input("loan_applicant_income:")
-        self.loan_applicant_liabilities=input("loan_applicant_liabilities")
-        self.loan_applicant_outstanding_debt_in_debt_registry=input("loan_applicant_outstanding_debt_in_debt_registry")
-        self.loan_applicant_is_repeat_client=bool(input("loan_applicant_is_repeat_client:"))      
-'''
+   
     def calculate_age(self,born):
         today=date.today()
         dt= datetime.strptime(self.loan_applicant_birthdate,'%Y-%m-%d')
-        return (today.year-dt.year)//timedelta(days=365.2425)
+        return today.year-dt.year - ((today.month, today.day) < (dt.month, dt.day))
 
     def application_checker(self):
         dob= self.loan_applicant_birthdate
