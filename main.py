@@ -43,6 +43,7 @@ class User:
                        "desc": description, "ts": datetime.now()}
         result.audit_trail['status'] = status
 
+    
 
     def application_checker(self):
         result = UserOutput()
@@ -52,12 +53,15 @@ class User:
             self.add_audit_trail(result, "age", age,
                                  "Age below 18 years", "Decline")
             result.UW_decision = "Decline"
+            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
         elif(age > 80):
             self.add_audit_trail(result, "age", age,
                                  "Age above 80 years", "Review")
             result.notification.append(
                 "Review birthdate and documents of Applicant")
             result.UW_decision = "Review"
+            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+
         else:
             if(self.loan_application_product_name == 'spl17'):
                 self.add_audit_trail(result, "spl17", True, "Product is spl17")
@@ -66,18 +70,20 @@ class User:
                     self.add_audit_trail(
                         result, "creditScore", self.loan_applicant_credit_score, "Credit score below 0", "Decline")
                     result.UW_decision = "Decline"
+                    result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
                 elif(self.loan_applicant_is_repeat_client == True):
                     self.add_audit_trail(
                         result, "repeatClient", True, 'Is a repeat client')
 
-                    if(self.loan_applicant_credit_score <= 10):
+                    if(0 <= self.loan_applicant_credit_score <= 10):
                         self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                              "Credit score below or equal 10")
                         if (self.loan_application_sum < 300):
                             self.add_audit_trail(result, 'loanApplSum', self.loan_application_sum,
                                                  'loan application sum is less than 300', 'Accept')
                             result.UW_decision = "Accept"
+                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
                         else:
                             self.add_audit_trail(result, 'loanApplSum', self.loan_application_sum,
@@ -85,55 +91,73 @@ class User:
                             result.notification.append(
                                 'Review Credit History Manually')
                             result.UW_decision = "Review"
+                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
                     else:
                         self.add_audit_trail(result, 'creditScore', self.loan_applicant_credit_score,
-                                             'Credit score greater than 10', 'Decline')
+                                             'Credit score greater than 10 or is negative', 'Decline')
                         self.UW_decision = "Decline"
+                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
                 else:
                     self.add_audit_trail(
                         result, "repeatClient", False, 'Is not a repeat client')
 
-                    if(self.loan_applicant_credit_score <= 5):
+                    if(0<= self.loan_applicant_credit_score <= 5):
                         self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
-                                             "Credit score below or equal 5")
+                                             "Credit score is greater than or equal to 0 or lesser than or equal to 5")
 
-                        # none type handle
+                        # none type 
+                        if(self.loan_applicant_outstanding_debt_in_debt_registry is None):
+                            self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
+                                                 'outstanding debt in registry is Null', 'Review')
+                        result.UW_decision="Review"
+                        result.notification.append(
+                                'Review loan applicant outstanding debt in debt registry is None type --> Review')
                         if(self.loan_applicant_outstanding_debt_in_debt_registry == 0):
                             self.add_audit_trail(result, "DebtInRegistry", 0,
                                                  'outstanding debt in registry is 0', 'Accept')
                             result.UW_decision = "Accept"
+                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
-                        elif(self.loan_applicant_outstanding_debt_in_debt_registry > 0 and self.loan_applicant_outstanding_debt_in_debt_registry < 50):
+                        elif(0 <self.loan_applicant_outstanding_debt_in_debt_registry < 50 ):
                             self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                  'outstanding debt in registry between 0 and 50 (both exclusive)', 'Review')
                             result.notification.append("Review Bank Statement")
                             result.UW_decision = "Review"
+                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
                         elif(self.loan_applicant_outstanding_debt_in_debt_registry > 50):
                             self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                  'outstanding debt in registry greater than 50', 'Decline')
                             self.UW_decision = "Decline"
+                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
                         else:
-                            # negative and exact 50
+                            
+                            # Assumption: if negative and exact 50--> Pass
                             pass
 
                     else:
                         self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                              "Credit score greater than 5", 'Decline')
                         self.UW_decision = "Decline"
+                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
             elif(self.loan_application_product_name == 'top_up'):
                 # redundant
                 if(age > 80):
                     self.notification = "Review birthdate and documents of Applicant"
-
+                    result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
                 else:
                     if(self.loan_applicant_credit_score <= 20):
                         self.add_audit_trail(result, 'creditScore', self.loan_applicant_credit_score,
                                              'Credit score between 0 and 20 (inclusive)', 'Accept')
                         self.UW_decision = "Accept"
-
+                        #None type
+                    elif(self.loan_applicant_credit_score is None):
+                        self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
+                                                 'loan applicant credit score is Null', 'Review')
+                        result.UW_decision="Review"
+                        result.notification.append('Credit score is None type --> Review')
                     else:
                         self.add_audit_trail(result, 'creditScore', self.loan_applicant_credit_score,
                                              'Credit score greater than 20', 'Decline')
@@ -145,29 +169,45 @@ class User:
                                             "Credit score below or equal 5")
 
                     # none type handle
+                    if (self.loan_applicant_outstanding_debt_in_debt_registry is None):
+                        self.add_audit_trail(result,"DebtInRegistry",self.loan_applicant_outstanding_debt_in_debt_registry," DebtInRegistry is None")
+                        result.UW_decision="Review"
+                        result.notification.append('DebtInRegistry is None type --> Review')
+
                     if(self.loan_applicant_outstanding_debt_in_debt_registry == 0):
-                        self.add_audit_trail(result, "DebtInRegistry", 0,
+                        self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                 'outstanding debt in registry is 0', 'Accept')
                         result.UW_decision = "Accept"
+                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
-                    elif(self.loan_applicant_outstanding_debt_in_debt_registry > 0 and self.loan_applicant_outstanding_debt_in_debt_registry < 50):
+                    elif( 0 < self.loan_applicant_outstanding_debt_in_debt_registry < 50):
                         self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                 'outstanding debt in registry between 0 and 50 (both exclusive)', 'Review')
                         result.notification.append("Review Bank Statement")
                         result.UW_decision = "Review"
+                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
 
                     elif(self.loan_applicant_outstanding_debt_in_debt_registry > 50):
                         self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                 'outstanding debt in registry greater than 50', 'Decline')
                         result.UW_decision = "Decline"
+                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
                     else:
-                        # negative and exact 50
+                        #  Assumption: if negative and exact 50--> Pass
                         pass
+                # None Type    
+                elif(self.loan_applicant_credit_score is None):
+                    self.add_audit_trail(result,"creditScore",self.loan_applicant_credit_score,"Credit score is None")
+                    self.UW_decision= "Review"
+                    result.notification.append('creditScore is None type --> Review')
+                    
+
 
                 else:
                     self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                             "Credit score greater than 5", 'Decline')
                     result.UW_decision = "Decline"
+                    result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
         return result
 
 
@@ -178,14 +218,15 @@ external_data = {
     "loan_application_duration_in_days": 90,
     "loan_application_is_top_up": False,
     "loan_applicant_fullname": "Alice Smith",
-    "loan_applicant_birthdate": "1988-01-05",
+    "loan_applicant_birthdate": "1935-01-05",
     "loan_applicant_credit_score": 2.3,
     "loan_applicant_income": 1241.0,
     "loan_applicant_liabilities": 312.6,
-    "loan_applicant_outstanding_debt_in_debt_registry": 4.32,
+    "loan_applicant_outstanding_debt_in_debt_registry": 1456.32,
     "loan_applicant_is_repeat_client": False
 }
 
 user1 = User(**external_data)
 print(asdict(user1.application_checker()))
-# print(asdict(user1))
+
+#print(asdict(user1))
