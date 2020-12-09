@@ -49,18 +49,31 @@ class User:
         result = UserOutput()
         dob = self.loan_applicant_birthdate
         age = self.calculate_age(dob)
+        ''''
+        Assumption:
+        
+        Whenever loan_applicant_outstanding_debt_in_debt_registry or loan_applicant_income will be None type then the dti ratio will be set to 
+        0.0 and a notification will be printed: Debt registry or applicant income is None Type; DTI setting to 0"
+        '''
+        try:
+            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+        except:
+            result.notification.append("Debt registry or applicant income is None Type; DTI setting to 0")
+            result.dti_ratio=0.0
+            
+
         if (age < 18):
             self.add_audit_trail(result, "age", age,
                                  "Age below 18 years", "Decline")
             result.UW_decision = "Decline"
-            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+
         elif(age > 80):
             self.add_audit_trail(result, "age", age,
                                  "Age above 80 years", "Review")
             result.notification.append(
                 "Review birthdate and documents of Applicant")
             result.UW_decision = "Review"
-            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+            
 
         else:
             if(self.loan_application_product_name == 'spl17'):
@@ -70,7 +83,7 @@ class User:
                     self.add_audit_trail(
                         result, "creditScore", self.loan_applicant_credit_score, "Credit score below 0", "Decline")
                     result.UW_decision = "Decline"
-                    result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                    
 
                 elif(self.loan_applicant_is_repeat_client == True):
                     self.add_audit_trail(
@@ -83,7 +96,7 @@ class User:
                             self.add_audit_trail(result, 'loanApplSum', self.loan_application_sum,
                                                  'loan application sum is less than 300', 'Accept')
                             result.UW_decision = "Accept"
-                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                            
 
                         else:
                             self.add_audit_trail(result, 'loanApplSum', self.loan_application_sum,
@@ -91,12 +104,12 @@ class User:
                             result.notification.append(
                                 'Review Credit History Manually')
                             result.UW_decision = "Review"
-                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                            
                     else:
                         self.add_audit_trail(result, 'creditScore', self.loan_applicant_credit_score,
                                              'Credit score greater than 10 or is negative', 'Decline')
                         self.UW_decision = "Decline"
-                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                        
 
                 else:
                     self.add_audit_trail(
@@ -117,20 +130,20 @@ class User:
                             self.add_audit_trail(result, "DebtInRegistry", 0,
                                                  'outstanding debt in registry is 0', 'Accept')
                             result.UW_decision = "Accept"
-                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                            
 
                         elif(0 <self.loan_applicant_outstanding_debt_in_debt_registry < 50 ):
                             self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                  'outstanding debt in registry between 0 and 50 (both exclusive)', 'Review')
                             result.notification.append("Review Bank Statement")
                             result.UW_decision = "Review"
-                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                            
 
                         elif(self.loan_applicant_outstanding_debt_in_debt_registry > 50):
                             self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                  'outstanding debt in registry greater than 50', 'Decline')
                             self.UW_decision = "Decline"
-                            result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                            
                         else:
                             
                             # Assumption: if negative and exact 50--> Pass
@@ -140,13 +153,13 @@ class User:
                         self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                              "Credit score greater than 5", 'Decline')
                         self.UW_decision = "Decline"
-                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                        
 
             elif(self.loan_application_product_name == 'top_up'):
                 # redundant
                 if(age > 80):
                     self.notification = "Review birthdate and documents of Applicant"
-                    result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                    
                 else:
                     if(self.loan_applicant_credit_score <= 20):
                         self.add_audit_trail(result, 'creditScore', self.loan_applicant_credit_score,
@@ -178,20 +191,20 @@ class User:
                         self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                 'outstanding debt in registry is 0', 'Accept')
                         result.UW_decision = "Accept"
-                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                        
 
                     elif( 0 < self.loan_applicant_outstanding_debt_in_debt_registry < 50):
                         self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                 'outstanding debt in registry between 0 and 50 (both exclusive)', 'Review')
                         result.notification.append("Review Bank Statement")
                         result.UW_decision = "Review"
-                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                        
 
                     elif(self.loan_applicant_outstanding_debt_in_debt_registry > 50):
                         self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                 'outstanding debt in registry greater than 50', 'Decline')
                         result.UW_decision = "Decline"
-                        result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                        
                     else:
                         #  Assumption: if negative and exact 50--> Pass
                         pass
@@ -207,7 +220,7 @@ class User:
                     self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                             "Credit score greater than 5", 'Decline')
                     result.UW_decision = "Decline"
-                    result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
+                    
         return result
 
 
@@ -220,7 +233,7 @@ external_data = {
     "loan_applicant_fullname": "Alice Smith",
     "loan_applicant_birthdate": "1935-01-05",
     "loan_applicant_credit_score": 2.3,
-    "loan_applicant_income": 1241.0,
+    "loan_applicant_income": None,
     "loan_applicant_liabilities": 312.6,
     "loan_applicant_outstanding_debt_in_debt_registry": 1456.32,
     "loan_applicant_is_repeat_client": False
