@@ -180,11 +180,17 @@ class User:
                         self.UW_decision = "Decline"
 
             else:
-                if(self.loan_applicant_credit_score <= 5):
+                # Assumption if the credit score is None Type
+                if(self.loan_applicant_credit_score is None):
+                        self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
+                                                 'loan applicant credit score is Null', 'Review')
+                        result.UW_decision="Review"
+                        result.notification.append('Credit score is None type --> Review')
+                elif(self.loan_applicant_credit_score <= 5):
                     self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                             "Credit score below or equal 5")
 
-                    # none type handle
+                    # Assumption when loan_applicant_outstanding_debt_in_debt_registry is None
                     if (self.loan_applicant_outstanding_debt_in_debt_registry is None):
                         self.add_audit_trail(result,"DebtInRegistry",self.loan_applicant_outstanding_debt_in_debt_registry," DebtInRegistry is None")
                         result.UW_decision="Review"
@@ -211,14 +217,7 @@ class User:
                     else:
                         #  Assumption: if negative and exact 50--> Pass
                         pass
-                # None Type    
-                elif(self.loan_applicant_credit_score is None):
-                    self.add_audit_trail(result,"creditScore",self.loan_applicant_credit_score,"Credit score is None")
-                    self.UW_decision= "Review"
-                    result.notification.append('creditScore is None type --> Review')
-                    
-
-
+                               
                 else:
                     self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                             "Credit score greater than 5", 'Decline')
@@ -238,7 +237,7 @@ external_data = {
     "loan_applicant_credit_score": 2.3,
     "loan_applicant_income": 146,
     "loan_applicant_liabilities": 312.6,
-    "loan_applicant_outstanding_debt_in_debt_registry":  1493.56,
+    "loan_applicant_outstanding_debt_in_debt_registry":  1878.90,
     "loan_applicant_is_repeat_client": False
 }
 
