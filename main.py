@@ -80,10 +80,13 @@ class User:
                 self.add_audit_trail(result, "spl17", True, "Product is spl17")
 
                 if (self.loan_applicant_credit_score < 0):
-                    self.add_audit_trail(
-                        result, "creditScore", self.loan_applicant_credit_score, "Credit score below 0", "Decline")
+                    self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score, "Credit score below 0", "Decline")
                     result.UW_decision = "Decline"
-                    
+                # Assumption when credit_score is None Type   
+                elif(self.loan_applicant_credit_score is None):
+                    self.add_audit_trail(result,"creditScore",self.loan_applicant_credit_score,"Credit score is None")
+                    self.UW_decision= "Review"
+                    result.notification.append('creditScore is None type --> Review')                       
 
                 elif(self.loan_applicant_is_repeat_client == True):
                     self.add_audit_trail(
@@ -104,7 +107,7 @@ class User:
                             result.notification.append(
                                 'Review Credit History Manually')
                             result.UW_decision = "Review"
-                            
+                    # Below is Assumption        
                     else:
                         self.add_audit_trail(result, 'creditScore', self.loan_applicant_credit_score,
                                              'Credit score greater than 10 or is negative', 'Decline')
@@ -114,12 +117,12 @@ class User:
                 else:
                     self.add_audit_trail(
                         result, "repeatClient", False, 'Is not a repeat client')
-
+                                        
                     if(0<= self.loan_applicant_credit_score <= 5):
                         self.add_audit_trail(result, "creditScore", self.loan_applicant_credit_score,
                                              "Credit score is greater than or equal to 0 or lesser than or equal to 5")
 
-                        # none type 
+                        # Assumption when loan_applicant_outstanding_debt_in_debt_registry is  none type 
                         if(self.loan_applicant_outstanding_debt_in_debt_registry is None):
                             self.add_audit_trail(result, "DebtInRegistry", self.loan_applicant_outstanding_debt_in_debt_registry,
                                                  'outstanding debt in registry is Null', 'Review')
