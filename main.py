@@ -51,14 +51,14 @@ class User:
         age = self.calculate_age(dob)
         ''''
         Assumption:
-        
-        Whenever loan_applicant_outstanding_debt_in_debt_registry or loan_applicant_income will be None type then the dti ratio will be set to 
-        0.0 and a notification will be printed: Debt registry or applicant income is None Type; DTI setting to 0"
+
+        Whenever loan_applicant_outstanding_debt_in_debt_registry or loan_applicant_income is None type then the dti ratio will be set to 
+        0.0 and a notification will be printed: Debt registry or applicant income is None Type; DTI setting to 0.0"
         '''
         try:
             result.dti_ratio = (self.loan_applicant_outstanding_debt_in_debt_registry / self.loan_applicant_income)
         except:
-            result.notification.append("Debt registry or applicant income is None Type; DTI setting to 0")
+            result.notification.append("Debt registry or applicant income is None Type; DTI setting to 0.0")
             result.dti_ratio=0.0
             
 
@@ -233,9 +233,9 @@ external_data = {
     "loan_applicant_fullname": "Alice Smith",
     "loan_applicant_birthdate": "1935-01-05",
     "loan_applicant_credit_score": 2.3,
-    "loan_applicant_income": None,
+    "loan_applicant_income": 146,
     "loan_applicant_liabilities": 312.6,
-    "loan_applicant_outstanding_debt_in_debt_registry": 1456.32,
+    "loan_applicant_outstanding_debt_in_debt_registry":  1493.56,
     "loan_applicant_is_repeat_client": False
 }
 
